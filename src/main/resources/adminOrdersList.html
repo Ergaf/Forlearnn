@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Замовлення</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-size: 120%;
+            font-family: 'Raleway', sans-serif;
+            background-color: white;
+        }
+        .loader {
+            color: red;
+            margin: auto;
+            text-align: center;
+            display: none;
+        }
+        .elem {
+            margin: 5px;
+            color: black;
+            border-radius: 20px;
+            /*border-radius: 15px;*/
+            padding: 15px;
+            background: white;
+            transition: 0.3s;
+            display: none;
+            position: relative;
+        }
+        .elem:hover{
+            background: lightgray;
+        }
+        .closeB {
+            padding-left: 5px;
+            padding-right: 5px;
+            color: white;
+            background-color: red;
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            border-radius: 20px;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .closeB:hover {
+            background-color: brown;
+            cursor: pointer;
+        }
+        .closeB:active {
+            background-color: black;
+        }
+        .lol {
+            background-color: white;
+            display: grid;
+            /*grid-template-columns: 49% 49%;*/
+        }
+        .search{
+            margin: 1%;
+            display: flex;
+            justify-content: center;
+            transition: 0.3s;
+        }
+        .inputs{
+            border: antiquewhite solid 3px;
+            background-color: white;
+            width: 40%;
+            height: 25px;
+            border-radius: 10px;
+        }
+        .inputs:hover{
+            border: #8e8e92 solid 3px;
+        }
+        .inputs:focus{
+            border: #4f4f51 solid 3px;
+        }
+        .buttons{
+            border: antiquewhite solid 3px;
+            background-color: white;
+            width: 15%;
+            height: 33px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+        .buttons:hover {
+            background-color: #8e8e92;
+            border: white solid 3px;
+            cursor: pointer;
+        }
+        .buttons:active{
+            background-color: #3f3f41;
+        }
+        .math{
+            margin: auto;
+            text-align: center;
+        }
+        .visible{
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    <input class="inputs" type="text" id="name" placeholder="Введiть name">
+    <input class="inputs" type="text" id="mail" placeholder="Введiть mail">
+    <button class="buttons" id="delete">ClearBase</button>
+    <input class="inputs" type="text" id="promo" placeholder="Введiть promo">
+    <input class="inputs" type="text" id="zakaz" placeholder="Введiть zakaz">
+    <button class="buttons" id="otpr">Вiдправити</button>
+</div>
+
+<div class="search">
+    <button class="buttons" id="reload">Оновити замовлення</button>
+    <input class="inputs" type="text" id="searchinput" placeholder="    Введiть критерій пошуку">
+    <button class="buttons" id="search">Знайти</button>
+</div>
+
+<div>
+    <button class="buttons coocies">Выйти</button>
+</div>
+
+<div class="math"></div>
+
+<div class="loader">Работаем с сервером...</div>
+
+<div class="lol">
+
+</div>
+
+<script>
+    document.querySelector(".coocies").addEventListener("click", async function () {
+        let data = {
+            sessionId: document.cookie.slice(10)
+        };
+        let response = await createFetch("/login", "DELETE", data);
+        document.cookie = "sessionId=J";
+        window.location = window.location.href;
+    });
+
+    //УДАЛЕНИЕ -------------------------------------
+    document.querySelector("#delete").addEventListener("click", async function lol () {
+        let response = await createFetch("/status", "DELETE", "deleteall");
+        let container = document.querySelector(".lol");
+        container.innerHTML = "";
+    });
+    //УДАЛЕНИЕ КОНЕЦ -------------------------------------
+
+    //ОТПРАВИТЬ ЗАКАЗ -------------------------------------
+    document.querySelector("#otpr").addEventListener("click", async function lol () {
+        const name = document.querySelector('#name').value;
+        const mail = document.querySelector('#mail').value;
+        const promo = document.querySelector('#promo').value;
+        const zakaz = document.querySelector('#zakaz').value;
+        const data = {
+            name: name,
+            mail: mail,
+            promo: promo,
+            zakazstr: zakaz,
+        };
+        console.log("отправляю: " + JSON.stringify(data));
+        let response = await createFetch("/status", "POST", data)
+    });
+    //ОТПРАВИТЬ ЗАКАЗ КОНЕЦ -------------------------------------
+
+    //ЗАГРУЗКА ЗАКАЗОВ -------------------------------------
+    document.querySelector("#reload").addEventListener("click", loadZakazs);
+    window.addEventListener("load", loadZakazs);
+    //ЗАГРУЗКА ЗАКАЗОВ КОНЕЦ -------------------------------------
+
+    //ПОИСК -------------------------------------
+    document.querySelector("#search").addEventListener("click", function () {
+        let value = document.querySelector("#searchinput").value;
+        let collectionelem = document.querySelectorAll(".elem");
+        for(let j = 0; j < collectionelem.length; j++){
+            search(collectionelem[j], value);
+            // console.log(collectionelem[j]);
+        }
+        document.querySelector(".math").innerText =
+            "Всього показано замовлень : "+document.querySelectorAll(".visible").length
+
+    });
+
+    function search(elem, val) {
+        let valIn = 0;
+        let slovo = "";
+        console.log(slovo);
+        for(let i = 0; i <= elem.textContent.length; i++){
+            if(val[valIn] === undefined){
+                elem.classList.add("visible");
+                console.log("сделал видимым");
+                break
+            } else {
+                elem.classList.remove("visible");
+                console.log("сделал невидимым");
+            }
+            if(elem.textContent[i] === val[valIn]){
+                slovo = slovo+elem.textContent[i];
+                valIn++;
+                if(valIn === val.length+1){
+                }
+            } else {
+                valIn = 0;
+            }
+        }
+    }
+    //ПОИСК КОНЕЦ -------------------------------------
+
+    //СОЗДАТЬ ЗАПРОС С СОДЕРЖИМЫМ -------------------------------------
+    async function createFetch(adres, method, data){
+        document.querySelector(".loader").classList.add("visible");
+        const response = await fetch(adres, {
+            method: method, // *GET, POST, PUT, DELETE, etc.
+            // mode: 'no-cors', // no-cors, cors, *same-origin
+            // cache: 'force-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            // credentials: 'same-origin', // include, *same-origin, omit
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            // redirect: 'follow', // manual, *follow, error
+            // referrer: 'no-referrer' // no-referrer, *client
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
+        }).catch(e => {console.log('Bad URL: ', e)});
+        let res = await response.json();
+        document.querySelector(".loader").classList.remove("visible");
+        return res;
+    }
+    //СОЗДАТЬ ЗАПРОС С СОДЕРЖИМЫМ КОНЕЦ -------------------------------------
+
+    //ФУНКЦИЯ ЗАГРУЗКИ И ОТРИСОВКИ ЗАКАЗОВ -------------------------------------
+    async function loadZakazs() {
+        let container = document.querySelector(".lol");
+        container.innerHTML = "";
+
+        let res = await createFetch("/status");
+        console.log(res);
+        res.forEach(e => {
+            let elem = document.createElement("div");
+            elem.innerText = "• Дата: "+e.time+"sec"+
+                "\n • Промокод: "+e.promo+
+                "\n • Iм'я: "+e.name+
+                "\n • Телефон/пошта: "+e.mail+
+                "\n • Опис замовлення: "+e.zakazstr;
+            elem.setAttribute("id", e.id);
+            elem.classList.add("elem");
+            elem.classList.add("visible");
+
+            let buttonClose = document.createElement("div");
+            buttonClose.classList.add("closeB");
+            buttonClose.innerText = "X";
+            elem.appendChild(buttonClose);
+            elem.addEventListener("click", async function() {
+                if(event.target == this.querySelector(".closeB")){
+                    let elemid = elem.getAttribute("id");
+                    let data = {
+                        id: elemid,
+                    };
+                    let res = await createFetch("/status", "PUT", data);
+                    console.log(res);
+                    if(res){
+                        elem.parentNode.removeChild(elem);
+                    }
+                }
+            });
+
+            document.querySelector(".lol").insertBefore(elem, document.querySelector(".lol").firstChild)
+        });
+        document.querySelector(".math").innerText = "Всього показано замовлень : "+res.length
+    }
+    //ФУНКЦИЯ ЗАГРУЗКИ И ОТРИСОВКИ ЗАКАЗОВ КОНЕЦ -------------------------------------
+
+</script>
+
+</body>
+</html>

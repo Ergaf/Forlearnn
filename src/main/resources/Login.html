@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>login</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-size: 120%;
+            font-family: 'Raleway', sans-serif;
+            background-color: white;
+        }
+        .container {
+            margin: auto;
+            width: 50%;
+            margin-top: 20%;
+        }
+        .input {
+            border: antiquewhite solid 3px;
+            background-color: white;
+            width: 40%;
+            height: 25px;
+            border-radius: 10px;
+        }
+        .button-log {
+            border: antiquewhite solid 3px;
+            background-color: white;
+            width: 15%;
+            height: 33px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+        .button-log:hover {
+            background-color: #8e8e92;
+            border: white solid 3px;
+            cursor: pointer;
+        }
+        .button-log:active{
+            background-color: #3f3f41;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <input class="input" type="text" id="name" placeholder="Логiн">
+    <input class="input" type="password" id="pass" placeholder="Пароль">
+    <button class="button-log" id="login">Вхiд</button>
+    <button class="button-log" id="login-admin">Зайти сразу</button>
+
+</div>
+
+
+<script>
+    document.querySelector("#login").addEventListener("click", async function () {
+        let login = document.querySelector("#name").value;
+        let pass = document.querySelector("#pass").value;
+        let data = {
+            name: Login,
+            password: pass
+        };
+        let response = await createFetch("/login", "POST", data);
+        document.cookie = `sessionId=${response}`;
+        console.log(document.cookie);
+        console.log(response);
+        window.location = window.location.href;
+
+    });
+
+    document.querySelector("#login-admin").addEventListener("click", async function () {
+        let data = {
+            name: "admin",
+            password: "12346"
+        };
+        let response = await createFetch("/login", "POST", data);
+        document.cookie = `sessionId=${response}`;
+        console.log(document.cookie);
+        console.log(response);
+        window.location = window.location.href;
+
+    });
+
+    async function createFetch(adres, method, data){
+        const response = await fetch(adres, {
+            method: method, // *GET, POST, PUT, DELETE, etc.
+            // mode: 'no-cors', // no-cors, cors, *same-origin
+            // cache: 'force-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            // credentials: 'same-origin', // include, *same-origin, omit
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            // redirect: 'follow', // manual, *follow, error
+            // referrer: 'no-referrer' // no-referrer, *client
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
+        }).catch(e => {console.log('Bad URL: ', e)});
+        let res = await response.json();
+        return res;
+    }
+</script>
+</body>
+</html>
